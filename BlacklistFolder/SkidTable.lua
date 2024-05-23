@@ -3,4 +3,5 @@ return {
   ["adam3rd"] = 248908110, --Reusing other converted scripts, steal walk animate (in john doe scr) from Maxilito's Star Glitcher, Calling his friends over anything cuz damn knowing he cooked, paid bucks to Typh on Ko-fi???? nahhhhh. Overall MelonSkidder
   ["Cherries_Rose"] = 5164112124 --Same to 2rd reason
   ["Pizza_alt368"] = 5768260349 --Flinging my ass
+  ["Aramwowo2"] = 5493364839 --Flinging my ass 2
 }
