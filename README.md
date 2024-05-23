@@ -1,3 +1,0 @@
-# Epiconister
-
-Cool shit
