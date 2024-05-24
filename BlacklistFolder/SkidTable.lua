@@ -3,5 +3,7 @@ return {
   ["Juniorek36"] = 866465234, --Attempt to dox Genesis FE over Elio blasio script, threatening to box me lol cry bout it
   ["adam3rd"] = 248908110, --Reusing other converted scripts, steal walk animate (in john doe scr) from Maxilito's Star Glitcher, Calling his friends over anything cuz damn knowing he cooked, paid bucks to Typh on Ko-fi???? nahhhhh. Overall MelonSkidder
   ["Cherries_Rose"] = 5164112124, --MelonSkidder
-  ["Aramwowo2"] = 5493364839 --Edgy skid
+  ["Aramwowo2"] = 5493364839, --Edgy skid
+  ["People_Blox2014"] = 5682729703 --Fling skid
+  
 }
