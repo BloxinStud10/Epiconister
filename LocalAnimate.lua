@@ -237,7 +237,7 @@ end
 
 -- Preload animations
 function playAnimation(animName, transitionTime, humanoid) 
-		
+	if script.Parent ~= Figure then return end
 	local roll = math.random(1, animTable[animName].totalWeight) 
 	local origRoll = roll
 	local idx = 1
