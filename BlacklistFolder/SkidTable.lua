@@ -1,9 +1,9 @@
 return {
-  ["Roblox"] = 1, --Wont unpatch permadeath
-  ["Juniorek36"] = 866465234, --Attempt to dox Genesis FE over Elio blasio script, threatening to box me lol cry bout it
-  ["adam3rd"] = 248908110, --Reusing other converted scripts, steal walk animate (in john doe scr) from Maxilito's Star Glitcher, Calling his friends over anything cuz damn knowing he cooked, paid bucks to Typh on Ko-fi???? nahhhhh. Overall MelonSkidder
-  ["Cherries_Rose"] = 5164112124, --MelonSkidder
-  ["Aramwowo2"] = 5493364839, --Edgy skid
-  ["People_Blox2014"] = 5682729703 --Fling skid
-  
+    [{Id=1,Name="Roblox"}] = "what the sigma",
+    [{Id=866465234,Name="Juniorek36"}] = "Cry about it and fuck your life",
+    [{Id=248908110,Name="adam3rd"}] = "Got ur Facecam, hand up skid",
+    [{Id=5164112124,Name="Cherries_Rose"}] = "Got ur Facecam, hand up skid",
+    [{Id=5099504885,Name="MeIonScripter"}] = "Got ur Facecam, hand up skid",
+    [{Id=1403739362,Name="uncleslikebums"}] = "Weirdo",
+    [{Id=3661427401,Name="GAMEBDDREAMERISBACK"}] = "Weirdo"
 }
