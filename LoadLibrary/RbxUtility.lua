@@ -1,35 +1,4 @@
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------JSON Functions Begin----------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-
- --JSON Encoder and Parser for Lua 5.1
- --Copyright 2007 Shaun Brown  (http://www.chipmunkav.com)
- --All Rights Reserved.
- 
- --Permission is hereby granted, free of charge, to any person 
- --obtaining a copy of this software to deal in the Software without 
- --restriction, including without limitation the rights to use, 
- --copy, modify, merge, publish, distribute, sublicense, and/or 
- --sell copies of the Software, and to permit persons to whom the 
- --Software is furnished to do so, subject to the following conditions:
- 
- --The above copyright notice and this permission notice shall be 
- --included in all copies or substantial portions of the Software.
- --If you find this software useful please give www.chipmunkav.com a mention.
-
- --THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
- --EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
- --OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
- --IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
- --ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
- --CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
- --CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- 
-local t = {}
+local lmao = {}
 
 local string = string
 local math = math
@@ -42,6 +11,7 @@ local setmetatable = setmetatable
 local pairs = pairs
 local ipairs = ipairs
 local assert = assert
+
 
 local StringBuilder = {
 	buffer = {}
@@ -487,7 +457,7 @@ function Null()
 end
 -------------------- End JSON Parser ------------------------
 
-t.DecodeJSON = function(jsonString)
+lmao.DecodeJSON = function(jsonString)
 	pcall(function() warn("RbxUtility.DecodeJSON is deprecated, please use Game:GetService('HttpService'):JSONDecode() instead.") end)
 
 	if type(jsonString) == "string" then
@@ -497,7 +467,7 @@ t.DecodeJSON = function(jsonString)
 	return nil
 end
 
-t.EncodeJSON = function(jsonTable)
+lmao.EncodeJSON = function(jsonTable)
 	pcall(function() warn("RbxUtility.EncodeJSON is deprecated, please use Game:GetService('HttpService'):JSONEncode() instead.") end)
 	return Encode(jsonTable)
 end
@@ -519,11 +489,11 @@ end
 --makes a wedge at location x, y, z
 --sets cell x, y, z to default material if parameter is provided, if not sets cell x, y, z to be whatever material it previously w
 --returns true if made a wedge, false if the cell remains a block
-t.MakeWedge = function(x, y, z, defaultmaterial)
+lmao.MakeWedge = function(x, y, z, defaultmaterial)
 	return game:GetService("Terrain"):AutoWedgeCell(x,y,z)
 end
 
-t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, selectionParent)
+lmao.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, selectionParent)
 	local terrain = game:GetService("Workspace"):FindFirstChild("Terrain")
 	if not terrain then return end
 
@@ -727,50 +697,8 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 	return updateSelection, destroyFunc
 end
 
------------------------------Terrain Utilities End-----------------------------
 
-
-
-
-
-
-
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------Signal class begin------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
---[[
-A 'Signal' object identical to the internal RBXScriptSignal object in it's public API and semantics. This function 
-can be used to create "custom events" for user-made code.
-API:
-Method :connect( function handler )
-	Arguments:   The function to connect to.
-	Returns:     A new connection object which can be used to disconnect the connection
-	Description: Connects this signal to the function specified by |handler|. That is, when |fire( ... )| is called for
-	             the signal the |handler| will be called with the arguments given to |fire( ... )|. Note, the functions
-	             connected to a signal are called in NO PARTICULAR ORDER, so connecting one function after another does
-	             NOT mean that the first will be called before the second as a result of a call to |fire|.
-
-Method :disconnect()
-	Arguments:   None
-	Returns:     None
-	Description: Disconnects all of the functions connected to this signal.
-
-Method :fire( ... )
-	Arguments:   Any arguments are accepted
-	Returns:     None
-	Description: Calls all of the currently connected functions with the given arguments.
-
-Method :wait()
-	Arguments:   None
-	Returns:     The arguments given to fire
-	Description: This call blocks until 
-]]
-
-function t.CreateSignal()
+function lmao.CreateSignal()
 	local this = {}
 
 	local mBindableEvent = Instance.new('BindableEvent')
@@ -820,104 +748,6 @@ function t.CreateSignal()
 	return this
 end
 
-------------------------------------------------- Sigal class End ------------------------------------------------------
-
-
-
-
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
------------------------------------------------Create Function Begins---------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
---[[
-A "Create" function for easy creation of Roblox instances. The function accepts a string which is the classname of
-the object to be created. The function then returns another function which either accepts accepts no arguments, in 
-which case it simply creates an object of the given type, or a table argument that may contain several types of data, 
-in which case it mutates the object in varying ways depending on the nature of the aggregate data. These are the
-type of data and what operation each will perform:
-1) A string key mapping to some value:
-      Key-Value pairs in this form will be treated as properties of the object, and will be assigned in NO PARTICULAR
-      ORDER. If the order in which properties is assigned matter, then they must be assigned somewhere else than the
-      |Create| call's body.
-
-2) An integral key mapping to another Instance:
-      Normal numeric keys mapping to Instances will be treated as children if the object being created, and will be
-      parented to it. This allows nice recursive calls to Create to create a whole hierarchy of objects without a
-      need for temporary variables to store references to those objects.
-
-3) A key which is a value returned from Create.Event( eventname ), and a value which is a function function
-      The Create.E( string ) function provides a limited way to connect to signals inside of a Create hierarchy 
-      for those who really want such a functionality. The name of the event whose name is passed to 
-      Create.E( string )
-
-4) A key which is the Create function itself, and a value which is a function
-      The function will be run with the argument of the object itself after all other initialization of the object is 
-      done by create. This provides a way to do arbitrary things involving the object from withing the create 
-      hierarchy. 
-      Note: This function is called SYNCHRONOUSLY, that means that you should only so initialization in
-      it, not stuff which requires waiting, as the Create call will block until it returns. While waiting in the 
-      constructor callback function is possible, it is probably not a good design choice.
-      Note: Since the constructor function is called after all other initialization, a Create block cannot have two 
-      constructor functions, as it would not be possible to call both of them last, also, this would be unnecessary.
-
-
-Some example usages:
-
-A simple example which uses the Create function to create a model object and assign two of it's properties.
-local model = Create'Model'{
-    Name = 'A New model',
-    Parent = game.Workspace,
-}
-
-
-An example where a larger hierarchy of object is made. After the call the hierarchy will look like this:
-Model_Container
- |-ObjectValue
- |  |
- |  `-BoolValueChild
- `-IntValue
-
-local model = Create'Model'{
-    Name = 'Model_Container',
-    Create'ObjectValue'{
-        Create'BoolValue'{
-            Name = 'BoolValueChild',
-        },
-    },
-    Create'IntValue'{},
-}
-
-
-An example using the event syntax:
-
-local part = Create'Part'{
-    [Create.E'Touched'] = function(part)
-        print("I was touched by "..part.Name)
-    end,	
-}
-
-
-An example using the general constructor syntax:
-
-local model = Create'Part'{
-    [Create] = function(this)
-        print("Constructor running!")
-        this.Name = GetGlobalFoosAndBars(this)
-    end,
-}
-
-
-Note: It is also perfectly legal to save a reference to the function returned by a call Create, this will not cause
-      any unexpected behavior. EG:
-      local partCreatingFunction = Create'Part'
-      local part = partCreatingFunction()
-]]
-
---the Create function need to be created as a functor, not a function, in order to support the Create.E syntax, so it
---will be created in several steps rather than as a single function declaration.
 local function Create_PrivImpl(objectType)
 	if type(objectType) ~= 'string' then
 		error("Argument of Create must be a string", 2)
@@ -967,7 +797,7 @@ local function Create_PrivImpl(objectType)
 
 
 			--define constructor function
-			elseif k == t.Create then
+			elseif k == lmao.Create then
 				if type(v) ~= 'function' then
 					error("Bad entry in Create body: Key `[Create]` should be paired with a constructor function, \
 					       got: "..tostring(v), 2)
@@ -998,48 +828,35 @@ local function Create_PrivImpl(objectType)
 end
 
 --now, create the functor:
-t.Create = setmetatable({}, {__call = function(tb, ...) return Create_PrivImpl(...) end})
+lmao.Create = setmetatable({}, {__call = function(tb, ...) return Create_PrivImpl(...) end})
 
 --and create the "Event.E" syntax stub. Really it's just a stub to construct a table which our Create
 --function can recognize as special.
-t.Create.E = function(eventName)
+lmao.Create.E = function(eventName)
 	return {__eventname = eventName}
 end
 
--------------------------------------------------Create function End----------------------------------------------------
-
-
-
-
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------Documentation Begin-----------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-------------------------------------------------------------------------------------------------------------------------
-
-t.Help = 
+lmao.Help = 
 	function(funcNameOrFunc) 
 		--input argument can be a string or a function.  Should return a description (of arguments and expected side effects)
-		if funcNameOrFunc == "DecodeJSON" or funcNameOrFunc == t.DecodeJSON then
+		if funcNameOrFunc == "DecodeJSON" or funcNameOrFunc == lmao.DecodeJSON then
 			return "Function DecodeJSON.  " ..
 			       "Arguments: (string).  " .. 
 			       "Side effect: returns a table with all parsed JSON values" 
 		end
-		if funcNameOrFunc == "EncodeJSON" or funcNameOrFunc == t.EncodeJSON then
+		if funcNameOrFunc == "EncodeJSON" or funcNameOrFunc == lmao.EncodeJSON then
 			return "Function EncodeJSON.  " ..
 			       "Arguments: (table).  " .. 
 			       "Side effect: returns a string composed of argument table in JSON data format" 
 		end  
-		if funcNameOrFunc == "MakeWedge" or funcNameOrFunc == t.MakeWedge then
+		if funcNameOrFunc == "MakeWedge" or funcNameOrFunc == lmao.MakeWedge then
 			return "Function MakeWedge. " ..
 			       "Arguments: (x, y, z, [default material]). " ..
 			       "Description: Makes a wedge at location x, y, z. Sets cell x, y, z to default material if "..
 			       "parameter is provided, if not sets cell x, y, z to be whatever material it previously was. "..
 			       "Returns true if made a wedge, false if the cell remains a block "
 		end
-		if funcNameOrFunc == "SelectTerrainRegion" or funcNameOrFunc == t.SelectTerrainRegion then
+		if funcNameOrFunc == "SelectTerrainRegion" or funcNameOrFunc == lmao.SelectTerrainRegion then
 			return "Function SelectTerrainRegion. " ..
 			       "Arguments: (regionToSelect, color, selectEmptyCells, selectionParent). " ..
 			       "Description: Selects all terrain via a series of selection boxes within the regionToSelect " ..
@@ -1050,7 +867,7 @@ t.Help =
 			       "arguments to said function are a new region3 to select, and the adornment color (color arg is optional). " ..
 			       "Also returns a second function that takes no arguments and destroys the selection"
 		end
-		if funcNameOrFunc == "CreateSignal" or funcNameOrFunc == t.CreateSignal then
+		if funcNameOrFunc == "CreateSignal" or funcNameOrFunc == lmao.CreateSignal then
 			return "Function CreateSignal. "..
 			       "Arguments: None. "..
 			       "Returns: The newly created Signal object. This object is identical to the RBXScriptSignal class "..
@@ -1101,6 +918,6 @@ t.Help =
 		end
 	end
 	
+	return lmao
+	
 --------------------------------------------Documentation Ends----------------------------------------------------------
-
-return t
