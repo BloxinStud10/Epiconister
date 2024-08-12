@@ -74,7 +74,7 @@ return function(neverbreakjoints,model,mainpart)
 			Part0=Part0;
 			Part1=Part1;
 			C0=CFrame.new();--Part0.CFrame:inverse();
-			C1=RelativeValue and RelativeValue.Value or Part1.CFrame:toObjectSpace(Part0.CFrame); --Part1.CFrame:inverse() * Part0.CFrame;-- Part1.CFrame:inverse();
+			C1=RelativeValue and RelativeValue.Value or Part1.CFrame:ToObjectSpace(Part0.CFrame); --Part1.CFrame:inverse() * Part0.CFrame;-- Part1.CFrame:inverse();
 			Parent=Part1;
 		})
 		if not RelativeValue then
@@ -105,5 +105,5 @@ return function(neverbreakjoints,model,mainpart)
 			MainPart.Anchored=false
 		end
 	end
-	WeldParts(GetBricks(model),handle,"Weld",false)
+	WeldParts(GetBricks(model),mainpart,"Weld",false)
 end
