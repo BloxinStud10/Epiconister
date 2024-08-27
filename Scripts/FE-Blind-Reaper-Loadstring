@@ -1,0 +1,115 @@
+-- Converted by Epic
+-- Made by Shackluster/PityPolyGon or whatever you call him
+-- not worth 8 whole months
+
+--[[
+	// Free accessories //
+	https://www.roblox.com/catalog/3409612660/International-Fedora-USA
+	https://www.roblox.com/catalog/3398308134/International-Fedora-Canada
+	https://www.roblox.com/catalog/4324158403/International-Fedora-Japan
+	https://www.roblox.com/catalog/3443038622/International-Fedora-Peru
+	https://www.roblox.com/catalog/4819740796/Robox
+
+	// Paid accessories //
+	https://www.roblox.com/catalog/11159410305/Rectangle-Head-For-Headless
+	https://www.roblox.com/catalog/11263254795/Dummy-Head-For-Headless
+	https://www.roblox.com/catalog/14255556501/Extra-Left-White-Arm
+	https://www.roblox.com/catalog/14255554762/Extra-Right-White-Arm
+	https://www.roblox.com/catalog/14255560646/Extra-Left-Tan-Arm
+	https://www.roblox.com/catalog/14255562939/Extra-Right-Tan-Arm
+	https://www.roblox.com/catalog/12344545199/Extra-Left-hand-moving-Blocky-white
+	https://www.roblox.com/catalog/12344591101/Extra-Right-hand-moving-Blocky-white
+	https://www.roblox.com/catalog/13839976999/Held-Dagger
+	https://www.roblox.com/catalog/13831200263/Casual-Stud-Soda
+	https://www.roblox.com/catalog/18641077392/Extra-Right-Arm-NOOB-EDITION
+	https://www.roblox.com/catalog/18641142410/Extra-Left-Arm-NOOB-EDITION
+
+	https://www.roblox.com/catalog/17374846953/Extra-Right-Black-Arm
+	https://www.roblox.com/catalog/17374851733/Extra-Left-Black-Arm
+	https://www.roblox.com/catalog/14768693948/White-Extended-Right-Arm
+	https://www.roblox.com/catalog/14768701869/White-Extended-Left-Arm
+	https://www.roblox.com/catalog/18641157833/Extra-Right-Leg-NOOB-EDITION
+	https://www.roblox.com/catalog/18641187217/Extra-Left-Leg-NOOB-EDITION
+	https://www.roblox.com/catalog/11159483910/Rectangle-Head-For-Headless
+	https://www.roblox.com/catalog/12652786974/Building-Brick
+
+	https://www.roblox.com/catalog/14255528083/Torso-Extension
+	https://www.roblox.com/catalog/13421786478/Extra-Torso-Blocky
+	https://www.roblox.com/catalog/14768678294/Torso-Extension
+	https://www.roblox.com/catalog/18641046146/Torso-Extension-NOOB-EDITION
+	https://www.roblox.com/catalog/14532301415/1x1x1x1s-Torso
+	https://www.roblox.com/catalog/13423624885/Super-Track-Star-Torso
+	https://www.roblox.com/catalog/11502853991/Glitched-Body
+	https://www.roblox.com/catalog/14053485259/BLACK-ROCKSTAR-SPIDER-PUFFER-VEST
+	https://www.roblox.com/catalog/13779879140/Black-Fluffy-Fur-Body
+	https://www.roblox.com/catalog/14443132226/Sponge
+	https://www.roblox.com/catalog/17163407577/Glitching-Red-Torso
+	https://www.roblox.com/catalog/16297156693/Transparent-Inverted-Black-Torso
+	https://www.roblox.com/catalog/17180496303/Blue-Torso
+	https://www.roblox.com/catalog/17171230401/Black-Torso
+	https://www.roblox.com/catalog/16297172412/Transparent-Inverted-white-Torso
+	https://www.roblox.com/catalog/17532958753/1x1x1x1-Torso-Black
+	https://www.roblox.com/catalog/17617062232/1x1x1x1s-Transparent-Torso
+	https://www.roblox.com/catalog/17629918311/1x1x1x1s-Torso-Glows
+	https://www.roblox.com/catalog/18566616218/Classic-R6-Zombie-Torso
+	https://www.roblox.com/catalog/17539599460/Freddy-Fatzbear-Torso
+
+	// Scythe (Optional) //
+	https://www.roblox.com/catalog/9402627690/We-want-Peace-Sign [Free]
+	https://www.roblox.com/catalog/12103236257/AO-Surfboard [Free]
+	https://www.roblox.com/catalog/7583370812/Nebula-Blade [Free]
+	
+	https://www.roblox.com/catalog/15087264233/Hammer
+	https://www.roblox.com/catalog/17326812233/Cracked-Void-Sword
+	https://www.roblox.com/catalog/17326800544/Large-Void-Cleaver
+	https://www.roblox.com/catalog/11520630882/Huge-Void-Anime-Sword
+	https://www.roblox.com/catalog/4315489767/Demonic-Greatsword
+	https://www.roblox.com/catalog/4794315940/Golden-Demonic-Greatsword
+	https://www.roblox.com/catalog/4506945409/Corrupt-Demonic-Greatsword
+	https://www.roblox.com/catalog/4458601937/Frozen-Demonic-Greatsword
+	https://www.roblox.com/catalog/4315514742/Oversized-Demonic-Greatsword
+	https://www.roblox.com/catalog/5316479641/Demon-God-Sword
+	https://www.roblox.com/catalog/5268555719/Demon-Lord-Sword
+	https://www.roblox.com/catalog/5268710380/Corrupt-Lord-Sword
+	https://www.roblox.com/catalog/5699795428/Halloween-Sword
+	https://www.roblox.com/catalog/5410428797/Corrupt-Void-Scythe
+	https://www.roblox.com/catalog/16649095810/Mystery-Scythe
+	
+	// Gun (also Optional) //
+	https://www.roblox.com/catalog/10775031176/The-Pogo
+	https://www.roblox.com/catalog/5552252553/Kinetic-Staff
+	https://www.roblox.com/catalog/9867487176/Le-Rouge-Cross-body-Bag-3-0
+	https://www.roblox.com/catalog/9867481700/Le-Rouge-Cross-body-Bag-1-0
+	https://www.roblox.com/catalog/18393521634/Retro-1887-Shotgun
+	https://www.roblox.com/catalog/17651760939/Classic-Shotgun
+	https://www.roblox.com/catalog/16702317684/Stud-Shotgun
+	https://www.roblox.com/catalog/10378851121/Barbarian-Trench-Gun
+	
+	// Bullet (also also Optional) //
+	https://www.roblox.com/catalog/4504231783/Elemental-Crystal-Golem-Shoulder-Rock
+]]
+
+--[[ FDless settings if you want to change something ig ]]
+options={["#RIP MyWorld"]={
+	stoptime = 1, --fling duration
+	allowshiftlock = true, --adds shiftlock (left ctrl)
+	clickfling = false, --allow click fling
+	highlightflingtargets = true, --highlight fling
+	respawntp = 3, --respawn tp mode
+		--[[
+			0 - stay at spawn
+			1 - randomtp close
+			2 - behind fake char
+			3 - hide body
+		]]
+	breakjointsmethod = 1, --breakjoints mode
+		--[[
+			1 - health+breakjoints (recommended)
+			2 - health or breakjoints
+			3 - breakjoints
+		]]
+	simrad = true --sets simulation radius
+}}
+
+--[[ Loadstring ]]
+loadstring(game:HttpGet("https://raw.githubusercontent.com/BloxinStud10/Epiconister/main/Loadstring/FE-Blind-Reaper-Obfuscated"))()
