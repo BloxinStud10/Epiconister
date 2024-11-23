@@ -1,0 +1,333 @@
+--Imported from Patchma Hub
+
+--no need to get and index the library tables with function names every time the script uses them
+local osclock=os.clock
+local tspawn=task.spawn
+local twait=task.wait
+local schar=string.char
+local ssub=string.sub
+local sfind=string.find
+local supper=string.upper
+local mrandom=math.random
+local sin=math.sin
+local cos=math.cos
+local abs=math.abs
+local rad=math.rad
+local min=math.min
+local max=math.max
+local clamp=math.clamp
+local tinsert=table.insert
+local tremove=table.remove
+local tclear=table.clear
+local tclone=table.clone
+local tfind=table.find
+local tunpack=table.unpack
+
+--the script doesnt have to read global varaibles every time to get them
+--why not have them saved in local varaibles for faster access times
+local next=next
+local pcall=pcall
+local xpcall=xpcall
+local type=type
+local typeof=typeof
+local game=game
+
+local i=Instance.new 
+local v2=Vector2.new 
+local v3=Vector3.new
+local c3=Color3.new 
+local cf=CFrame.new
+local cfl=CFrame.lookAt
+local angles=CFrame.Angles
+local u2=UDim2.new 
+local e=Enum 
+
+local sine=osclock()
+local deltaTime=0
+local v3_0=v3(0,0,0)
+local v3_101=v3(1,0,1)
+local v3_010=v3(0,1,0)
+local v3_001=v3(0,0,1)
+local cf_0=cf(0,0,0)
+local v3_xz=v3_101*10
+local v3_xzL=v3_101*250.1
+local v3_net=v3_010*25.01
+
+local insSet=function(a,b,c) a[b]=c end
+local insGet=function(a,b) return a[b] end
+local cfGet=function(a,b) return a[b] end
+local cfMul=function(a,b) return a*b end
+local cfAdd=function(a,b) return a+b end
+local v3Get=function(a,b) return a[b] end
+--multiplying and adding vector3 is faster if you use the * and + operators
+
+--no need to index instances every time to call their functions
+local Clone=insGet(game,"Clone")
+local ClearAllChildren=insGet(game,"ClearAllChildren")
+local Destroy=insGet(game,"Destroy")
+local IsA=insGet(game,"IsA")
+local FindFirstChildOfClass=insGet(game,"FindFirstChildOfClass")
+local FindFirstChildWhichIsA=insGet(game,"FindFirstChildWhichIsA")
+local GetChildren=insGet(game,"GetChildren")
+local GetDescendants=insGet(game,"GetDescendants")
+local IsDescendantOf=insGet(game,"IsDescendantOf")
+local GetPropertyChangedSignal=insGet(game,"GetPropertyChangedSignal")
+
+--findfirstchildofclass faster than getservice
+local ws=FindFirstChildOfClass(game,"Workspace")
+local plrs=FindFirstChildOfClass(game,"Players")
+local rus=FindFirstChildOfClass(game,"RunService")
+local uis=FindFirstChildOfClass(game,"UserInputService")
+local gs=FindFirstChildOfClass(game,"GuiService")
+local sg=FindFirstChildOfClass(game,"StarterGui")
+local lp=insGet(plrs,"LocalPlayer")
+local mouse=insGet(lp,"GetMouse")(lp)
+local stepped=insGet(rus,"Stepped")
+local heartbeat=insGet(rus,"Heartbeat")
+local renderstepped=insGet(rus,"RenderStepped")
+
+local SetCore=insGet(sg,"SetCore")
+local SetCoreGuiEnabled=insGet(sg,"SetCoreGuiEnabled")
+local GetCoreGuiEnabled=insGet(sg,"GetCoreGuiEnabled")
+local Connect=heartbeat.Connect
+local Once=heartbeat.Once
+local Disconnect=Connect(GetPropertyChangedSignal(game,"CreatorId"),type).Disconnect
+local Wait=heartbeat.Wait
+local GetMouseLocation=insGet(uis,"GetMouseLocation")
+local GetFocusedTextBox=insGet(uis,"GetFocusedTextBox")
+local GetMouseDelta=insGet(uis,"GetMouseDelta")
+local IsMouseButtonPressed=insGet(uis,"IsMouseButtonPressed")
+local IsKeyDown=insGet(uis,"IsKeyDown")
+
+local movedirection=v3(0,0,0)
+
+local cam=nil
+local oldcamsignal=nil
+local refcam=function()
+	local newcam=insGet(ws,"CurrentCamera")
+	while not newcam do
+		Wait(GetPropertyChangedSignal(ws,"CurrentCamera"))
+		newcam=insGet(ws,"CurrentCamera")
+	end
+	cam=newcam
+end
+refcam()
+
+local camcf=insGet(cam,"CFrame")
+local camcfLV=cfGet(camcf,"LookVector")
+local camrot=cfl(v3_0,camcfLV)
+local camcfRV=cfGet(camrot,"RightVector")
+
+local mradN05=rad(-0.5)
+local KeyCode=e.KeyCode
+local enumMB2=e.UserInputType.MouseButton2
+local enumMLCP=e.MouseBehavior.LockCurrentPosition
+local enumMLC=(insGet(uis,"TouchEnabled") and enumMLCP) or e.MouseBehavior.LockCenter 
+local enumMD=e.MouseBehavior.Default
+local enumMW=e.UserInputType.MouseWheel
+local enumMM=e.UserInputType.MouseMovement
+
+local keyW=KeyCode.W
+local Wpressed=IsKeyDown(uis,keyW)
+local keyA=KeyCode.A
+local Apressed=IsKeyDown(uis,keyA)
+local keyS=KeyCode.S
+local Spressed=IsKeyDown(uis,keyS)
+local keyD=KeyCode.D
+local Dpressed=IsKeyDown(uis,keyD)
+local keySpace=KeyCode.Space
+local jumpingInput=IsKeyDown(uis,keySpace)
+
+tspawn(function()
+	Connect(GetPropertyChangedSignal(ws,"CurrentCamera"),function()
+		if oldcamsignal then
+			Disconnect(oldcamsignal)
+		end
+		refcam()
+		oldcamsignal=Connect(GetPropertyChangedSignal(cam,"CFrame"),function()
+			camcf=insGet(cam,"CFrame")
+			camcfLV=cfGet(camcf,"LookVector")
+			camrot=cfl(v3_0,camcfLV)
+			camcfRV=cfGet(camrot,"RightVector")
+		end)
+	end)
+	
+	oldcamsignal=Connect(GetPropertyChangedSignal(cam,"CFrame"),function()
+		camcf=insGet(cam,"CFrame")
+		camcfLV=cfGet(camcf,"LookVector")
+		camrot=cfl(v3_0,camcfLV)
+		camcfRV=cfGet(camrot,"RightVector")
+	end)
+	
+	local mouseBehavior=nil
+	local lastMouseBehavior=insGet(uis,"MouseBehavior")
+	Connect(GetPropertyChangedSignal(uis,"MouseBehavior"),function()
+		if mouseBehavior and (insGet(uis,"MouseBehavior")~=mouseBehavior) then
+			insSet(uis,"MouseBehavior",mouseBehavior)
+		end
+	end)
+	
+	local FWmovement=0
+	local RTmovement=0
+	local isWalking=false
+	local refreshKeyboardMovement=function()
+		if Wpressed then if Spressed then if Dpressed then if Apressed then isWalking=false else FWmovement=0 RTmovement=1 isWalking=true end else if Apressed then FWmovement=0 RTmovement=-1 isWalking=true else isWalking=false end end else FWmovement=1 if Dpressed then if Apressed then RTmovement=0 else RTmovement=1 end else if Apressed then RTmovement=-1 else RTmovement=0 end end isWalking=true end else if Spressed then FWmovement=-1 if Dpressed then if Apressed then RTmovement=0 else RTmovement=1 end else if Apressed then RTmovement=-1 else RTmovement=0 end end isWalking=true else if Dpressed then if Apressed then isWalking=false else FWmovement=0 RTmovement=1 isWalking=true end else if Apressed then FWmovement=0 RTmovement=-1 isWalking=true else isWalking=false end end end end
+		if isWalking then movedirection=v3(Apressed and -1 or Dpressed and 1,0,Spressed and -1 or Wpressed and 1) else movedirection=v3_0 end
+	end
+	refreshKeyboardMovement()
+
+	local keyShift=KeyCode.LeftShift
+	Connect(insGet(uis,"InputBegan"),function(a)
+		if insGet(gs,"MenuIsOpen") or GetFocusedTextBox(uis) then
+			return
+		end
+		a=insGet(a,"KeyCode")
+		if a==keyW then
+			Wpressed=true
+			refreshKeyboardMovement()
+		elseif a==keyA then
+			Apressed=true
+			refreshKeyboardMovement()
+		elseif a==keyS then
+			Spressed=true
+			refreshKeyboardMovement()
+		elseif a==keyD then
+			Dpressed=true
+			refreshKeyboardMovement()
+		elseif a==keySpace then
+			jumpingInput=true
+		end
+	end)
+	Connect(insGet(uis,"InputEnded"),function(a)
+		a=insGet(a,"KeyCode")
+		if a==keyW then
+			Wpressed=false
+			refreshKeyboardMovement()
+		elseif a==keyA then
+			Apressed=false
+			refreshKeyboardMovement()
+		elseif a==keyS then
+			Spressed=false
+			refreshKeyboardMovement()
+		elseif a==keyD then
+			Dpressed=false
+			refreshKeyboardMovement()
+		elseif a==keySpace then
+			jumpingInput=false
+		end
+	end)
+
+	local thumbstickEndX=0
+	local thumbstickStartY=0
+
+	local thumbstickSizeMultiplier=0
+
+	local jumpStartX=0
+	local jumpStartY=0
+	local jumpEndX=0
+	local jumpEndY=0
+
+	local thumbstickInputObject=nil
+	local jumpInputObject=nil
+
+	local thumbstickTouchStart=v3_0
+	local cameraZoomInputMagnitude=0
+
+	Connect(insGet(uis,"TouchStarted"),function(inputObject)
+		if insGet(gs,"MenuIsOpen") or GetFocusedTextBox(uis) then
+			return
+		end
+
+		local touchPos=insGet(inputObject,"Position")
+		local touchX=v3Get(touchPos,"X")
+		local touchY=v3Get(touchPos,"Y")
+
+		if (not thumbstickInputObject) and touchX<thumbstickEndX and touchY>thumbstickStartY then
+			thumbstickInputObject=inputObject
+			thumbstickTouchStart=insGet(inputObject,"Position")
+			isWalking=false
+		elseif (not jumpInputObject) and touchY>jumpStartY and touchX>jumpStartX and touchX<jumpEndX and touchY<jumpEndY then
+			jumpInputObject=inputObject
+			jumpingInput=true
+		end
+	end)
+	Connect(insGet(uis,"TouchMoved"),function(inputObject)
+		local touchPos=insGet(inputObject,"Position")
+		local touchX=v3Get(touchPos,"X")
+		local touchY=v3Get(touchPos,"Y")
+		if inputObject==thumbstickInputObject then
+			local direction=insGet(inputObject,"Position")-thumbstickTouchStart
+			local directionMag=v3Get(direction,"Magnitude")/thumbstickSizeMultiplier
+			if directionMag>0.05 then
+				isWalking=true
+				direction=v3Get(direction,"Unit")*min(1,(directionMag-0.05)/0.95) 
+				FWmovement=-v3Get(direction,"Y")
+				RTmovement=v3Get(direction,"X")
+				movedirection=v3Get(v3Get(camcfLV*v3_101,"Unit")*FWmovement+v3Get(camcfRV*v3_101,"Unit")*RTmovement,"Unit")
+			else
+				movedirection=v3_0
+				isWalking=false
+			end
+		elseif inputObject==jumpInputObject then
+			jumpingInput=touchY>jumpStartY and touchX>jumpStartX and touchX<jumpEndX and touchY<jumpEndY
+		end
+	end)
+	Connect(insGet(uis,"TouchEnded"),function(inputObject)
+		if inputObject==thumbstickInputObject then
+			thumbstickInputObject=nil
+			isWalking=false
+			movedirection=v3_0
+		elseif inputObject==jumpInputObject then
+			jumpInputObject=nil
+			jumpingInput=false
+		elseif inputObject==cameraRotateInputObject then
+			cameraRotateInputObject=nil
+			cameraZoomInputObject=nil
+		elseif inputObject==cameraZoomInputObject then
+			cameraZoomInputObject=nil
+		end
+	end)
+
+	local refreshTouchRegions=function()
+		local sX=insGet(mouse,"ViewSizeX")
+		local sY=insGet(mouse,"ViewSizeY")
+		local isSmallScreen=min(sX,sY)<=500
+
+		sY=sY+insGet(gs,"TopbarInset").Height
+
+		thumbstickEndX=sX*0.4
+		thumbstickStartY=(sY+0)*0.333
+
+		if isSmallScreen then
+			thumbstickSizeMultiplier=35
+			jumpStartX=sX-95
+			jumpStartY=sY-90
+			jumpEndX=jumpStartX+70
+			jumpEndY=jumpStartY+70
+		else
+			thumbstickSizeMultiplier=60
+			jumpStartX=sX-170
+			jumpStartY=sY-210
+			jumpEndX=jumpStartX+120
+			jumpEndY=jumpStartY+120
+		end
+	end
+	Connect(GetPropertyChangedSignal(mouse,"ViewSizeX"),refreshTouchRegions)
+	Connect(GetPropertyChangedSignal(mouse,"ViewSizeY"),refreshTouchRegions)
+	Connect(GetPropertyChangedSignal(gs,"TopbarInset"),refreshTouchRegions)
+	refreshTouchRegions()
+end)
+
+while true do
+wait()
+print(movedirection, game.Players.LocalPlayer.Character.Humanoid.MoveDirection)
+end
+
+return {
+	MoveDirection = function()
+		return movedirection
+	end,
+	Jumping = function()
+		return jumpinginput
+	end
+}
