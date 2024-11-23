@@ -318,11 +318,6 @@ tspawn(function()
 	refreshTouchRegions()
 end)
 
-while true do
-wait()
-print(movedirection, game.Players.LocalPlayer.Character.Humanoid.MoveDirection)
-end
-
 return {
 	MoveDirection = function()
 		return movedirection
