@@ -1,3 +1,5 @@
+-- Imported from Patchma Hub
+
 --no need to get and index the library tables with function names every time the script uses them
 local osclock=os.clock
 local tspawn=task.spawn
