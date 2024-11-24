@@ -139,6 +139,7 @@ local keySpace=KeyCode.Space
 local jumpingInput=IsKeyDown(uis,keySpace)
 
 tspawn(function()
+	local movesignal = nil
 	Connect(GetPropertyChangedSignal(ws,"CurrentCamera"),function()
 		if oldcamsignal then
 			Disconnect(oldcamsignal)
@@ -146,9 +147,7 @@ tspawn(function()
 		refcam()
 		oldcamsignal=Connect(GetPropertyChangedSignal(cam,"CFrame"),function()
 			camcf=insGet(cam,"CFrame")
-			camcfLV=cfGet(camcf,"LookVector")
 			camrot=cfl(v3_0,camcfLV)
-			camcfRV=cfGet(camrot,"RightVector")
 		end)
 	end)
 	
@@ -258,7 +257,7 @@ tspawn(function()
 		if inputObject==thumbstickInputObject then
 			local direction=insGet(inputObject,"Position")-thumbstickTouchStart
 			local directionMag=v3Get(direction,"Magnitude")/thumbstickSizeMultiplier
-			if directionMag>0.05 then
+			if directionMag>0 then
 				isWalking=true
 				direction=v3Get(direction,"Unit")*min(1,(directionMag-0.05)/0.95) 
 				FWmovement=-v3Get(direction,"Y")
@@ -316,6 +315,22 @@ tspawn(function()
 	Connect(GetPropertyChangedSignal(mouse,"ViewSizeY"),refreshTouchRegions)
 	Connect(GetPropertyChangedSignal(gs,"TopbarInset"),refreshTouchRegions)
 	refreshTouchRegions()
+	
+	local mouseCameraMove=false
+	Connect(insGet(uis,"InputChanged"),function(a,b)
+		if b then return end
+		local inputType=insGet(a,"UserInputType")
+		if mouseCameraMove and inputType==enumMM then
+			local rotation=GetMouseDelta(uis)*mradN05
+			camcfLV=cfGet(cfMul(camrot,angles(rotation.Y,rotation.X,0)),"LookVector")
+			camrot=cfl(v3_0,camcfLV)
+			camcfRV=cfGet(camrot,"RightVector")
+		end
+	end)
+	
+	Connect(heartbeat,function()
+		movedirection=isWalking and v3Get(v3Get(camcfLV*v3_101,"Unit")*FWmovement+v3Get(camcfRV*v3_101,"Unit")*RTmovement,"Unit") or v3(0,0,0)
+	end)
 end)
 
 return {
