@@ -338,6 +338,6 @@ return {
 		return movedirection
 	end,
 	Jumping = function()
-		return jumpinginput
+		return jumpingInput
 	end
 }
