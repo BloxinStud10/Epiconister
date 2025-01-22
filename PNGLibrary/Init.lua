@@ -935,7 +935,7 @@ function PNG.new(buffer)
 			crc = reader:ReadUInt32()
 		end
 		
-		local chunk = 
+		local chunk =
 		{
 			Length = length;
 			Type = chunkType;
@@ -945,7 +945,7 @@ function PNG.new(buffer)
 		}
 		
 		if Chunks[chunkType] then
-			handler = require(handler)
+			handler = Chunks[chunkType]
 			handler(file, chunk)
 		end
 		
@@ -993,11 +993,11 @@ function PNG.new(buffer)
 	
 	local bpp = math.max(1, channels * (bitDepth / 8))
 	file.BytesPerPixel = bpp
-	
-	-- Unfilter the buffer and 
+
+	-- Unfilter the buffer and
 	-- load it into the bitmap.
-	
-	for row = 1, height do	
+
+	for row = 1, height do
 		local filterType = buffer:ReadByte()
 		local scanline = buffer:ReadBytes(width * bpp, true)
 		
@@ -1020,7 +1020,7 @@ function PNG.new(buffer)
 			Unfilter:Paeth(scanline, bitmap, bpp, row)
 		end
 	end
-	
+
 	return setmetatable(file, PNG)
 end
 
