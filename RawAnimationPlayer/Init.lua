@@ -1107,4 +1107,4 @@ function Animator.new(humanoid): Animator
 	return self
 end
 
-_G.Animator = Animator
+return Animator
