@@ -881,6 +881,7 @@ end
 
 function Animator:LoadAnimation(keyframeSequence)
 	assertIsObject(self)
+	assertClass("LoadAnimation", keyframeSequence, {"AnimationTrack", "KeyframeSequence"}, 2)
 	local animations = self._animations
 	for _, animation in animations do
 		if animation._keyframeSequence == keyframeSequence then
@@ -970,6 +971,8 @@ local function JointTracker(joint, onSet, onUnset)
 end
 
 function Animator.new(humanoid): Animator
+	assertClass("Animator.new", humanoid, {"Humanoid", "AnimationController"}, 1)
+
 	local animator = Animators[humanoid]
 	if animator then
 		return animator
