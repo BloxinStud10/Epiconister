@@ -459,10 +459,13 @@ local AnimationTrack = {}
 AnimationTrack.__index = AnimationTrack
 
 function AnimationTrack:AdjustSpeed(speed)
+	assertType("AdjustSpeed", speed, {"number"}, 2)
 	self.Speed = speed
 end
 
 function AnimationTrack:AdjustWeight(weight, fadeTime)
+	assertType("AdjustWeight", weight, {"number"}, 2)
+	assertType("AdjustWeight", fadeTime, {"number", "nil"}, 3)
 	self.Weight = weight
 	if self._setWeight then
 		self._setWeight(weight, fadeTime)
@@ -470,6 +473,7 @@ function AnimationTrack:AdjustWeight(weight, fadeTime)
 end
 
 function AnimationTrack:GetMarkerReachedSignal(name)
+	assertType("GetMarkerReachedSignal", name, {"string"}, 2)
 	local event = self._markerReachedSignals[name]
 	if not event then
 		event = Signal("MarkerReached")
@@ -479,6 +483,7 @@ function AnimationTrack:GetMarkerReachedSignal(name)
 end
 
 function AnimationTrack:GetTimeOfKeyframe(keyframeName)
+	assertType("GetTimeOfKeyframe", keyframeName, {"string"}, 2)
 	return self._keyframeTimes[keyframeName] or error("Could not find a keyframe by that name!")
 end
 
@@ -489,6 +494,10 @@ local tclear = table.clear
 local cframeIdentity = CFrame.identity
 
 function AnimationTrack:Play(fadeTime, weight, speed)
+	assertType("Play", fadeTime, {"number", "nil"}, 2)
+	assertType("Play", weight, {"number", "nil"}, 3)
+	assertType("Play", speed, {"number", "nil"}, 4)
+
 	fadeTime = fadeTime or 0.1
 	weight = weight or self.Weight
 	speed = speed or 1
@@ -683,12 +692,8 @@ function AnimationTrack:Play(fadeTime, weight, speed)
 				poseIndexes[jointName] = poseIdx
 				nextPoseIndexes[jointName] = nextPoseIdx
 			end
-			if not nextPose or lastPose == nextPose then
-				transforms[jointName] = lastPose.cframe
-			else
-				local dt = (timePosition - lastPose.time)/(nextPose.time - lastPose.time)
-				transforms[jointName] = lastPose.cframe:Lerp(nextPose.cframe, getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection))
-			end
+			local dt = (timePosition - lastPose.time)/(nextPose.time - lastPose.time)
+			transforms[jointName] = lastPose.cframe:Lerp(nextPose.cframe, getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection))
 		end
 		return transforms, netWeight
 	end
@@ -732,6 +737,8 @@ function AnimationTrack:_fadeOut(fadeTime)
 end
 
 function AnimationTrack:Stop(fadeTime)
+	assertType("Stop", fadeTime, {"number", "nil"}, 2)
+
 	if not self.IsPlaying then
 		return
 	end
@@ -870,6 +877,7 @@ end
 
 function Animator:LoadAnimation(keyframeSequence)
 	assertIsObject(self)
+	assertClass("LoadAnimation", keyframeSequence, {"AnimationTrack", "KeyframeSequence"}, 2)
 	local animations = self._animations
 	for _, animation in animations do
 		if animation._keyframeSequence == keyframeSequence then
@@ -959,6 +967,8 @@ local function JointTracker(joint, onSet, onUnset)
 end
 
 function Animator.new(humanoid): Animator
+	assertClass("Animator.new", humanoid, {"Humanoid", "AnimationController"}, 1)
+
 	local animator = Animators[humanoid]
 	if animator then
 		return animator
@@ -1046,8 +1056,7 @@ function Animator.new(humanoid): Animator
 				transform = currentTransforms[jointName]:Lerp(cfIdentity, 1 - (1/10)^(delta*10))
 				newTransforms[jointName] = transform
 			end
-			--joint.joint.C0 = joint.c0 * transform
-			joint.joint.Transform = transform
+			joint.joint.C0 = joint.c0 * transform
 		end
 		self._transforms = newTransforms
 		steppedEvent:Fire(newTransforms)
