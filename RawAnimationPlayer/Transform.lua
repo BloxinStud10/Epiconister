@@ -687,7 +687,7 @@ function AnimationTrack:Play(fadeTime, weight, speed)
 				transforms[jointName] = lastPose.cframe
 			else
 				local dt = (timePosition - lastPose.time)/(nextPose.time - lastPose.time)
-				transforms[jointName] = lastPose.cframe:Lerp(nextPose.cframe, getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection))
+				transforms[jointName] = lastPose.cframe:Lerp(nextPose.cframe, math.min(getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection),1))
 			end
 		end
 		return transforms, netWeight
@@ -723,7 +723,7 @@ function AnimationTrack:_fadeOut(fadeTime)
 			return
 		end
 		for jointName, initCF in initCFrames do
-			newTransforms[jointName] = initCF:Lerp(cframeIdentity, a)
+			newTransforms[jointName] = initCF:Lerp(cframeIdentity, math.min(a,1))
 		end
 		self._transforms = newTransforms
 		return {}, self.Weight*(1 - a)
@@ -1024,7 +1024,7 @@ function Animator.new(humanoid): Animator
 					if other then
 						-- hope this works!
 						local a = priority == other[3] and weight/(weight + other[4]) or weight
-						local cfFinal = other[2]:Lerp(cf, a) 
+						local cfFinal = other[2]:Lerp(cf, math.min(a,1)) 
 						newTransforms[jointName] = {startTime, cfFinal, priority, weight}
 					else
 						newTransforms[jointName] = {startTime, cf, priority, weight}
@@ -1043,7 +1043,7 @@ function Animator.new(humanoid): Animator
 				transform = cf
 				newTransforms[jointName] = transform
 			else
-				transform = currentTransforms[jointName]:Lerp(cfIdentity, 1 - (1/10)^(delta*10))
+				transform = currentTransforms[jointName]:Lerp(cfIdentity, math.min(1 - (1/10)^(delta*10),1))
 				newTransforms[jointName] = transform
 			end
 			joint.joint.C0 = joint.joint.C0:Lerp(joint.c0 * transform, math.min(delta*20,1))
