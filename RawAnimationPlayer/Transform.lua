@@ -1046,7 +1046,7 @@ function Animator.new(humanoid): Animator
 				transform = currentTransforms[jointName]:Lerp(cfIdentity, 1 - (1/10)^(delta*10))
 				newTransforms[jointName] = transform
 			end
-			joint.joint.C0 = joint.joint.C0:Lerp(joint.c0 * transform, math.min(delta*10,1))
+			joint.joint.C0 = joint.joint.C0:Lerp(joint.c0 * transform, math.min(delta*20,1))
 		end
 		self._transforms = newTransforms
 		steppedEvent:Fire(newTransforms)
