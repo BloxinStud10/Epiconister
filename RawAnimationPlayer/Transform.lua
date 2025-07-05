@@ -1050,7 +1050,7 @@ function Animator.new(humanoid): Animator
 		end
 		self._transforms = newTransforms
 		steppedEvent:Fire(newTransforms)
-		debug.profileend()
+		--debug.profileend()
 	end)
 
 	local function newDescendant(joint)
