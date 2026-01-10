@@ -1,29 +1,46 @@
 --There is already Socket by 4DBug but whatever
 
-local ShareSocket = {}
-local SocketPorts = {}
-local BaseConnections = {}
-
+local game = game
+local setmetatable = setmetatable
 local tableinsert = table.insert
+local tableremove = table.remove
+local tablefind = table.find
+local tableclear = table.clear
 local tableunpack = table.unpack
 local cframenew = CFrame.new
 local typeof = typeof
 local type = type
-local sharedportid = cframenew(36,1940,67)
+local next = next
+local pcall = pcall
+local sharedportid = cframenew(0,10383,0)
+local emptyfunction = function() end
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local RobloxReplicatedStorage = game:GetService("RobloxReplicatedStorage")
+local GetService = game.GetService
+local WaitForChild = game.WaitForChild
+local GetPropertyChangedSignal = game.GetPropertyChangedSignal
+
+local ClientSocket = {}
+local SocketPorts = {}
+local BaseConnections = {}
+
+local Players = GetService(game,"Players")
+local RunService = GetService(game,"RunService")
+local RobloxReplicatedStorage = GetService(game,"RobloxReplicatedStorage")
+
+local Request = WaitForChild(RobloxReplicatedStorage,"RequestDeviceCameraCFrame")
+local Replicate = WaitForChild(RobloxReplicatedStorage,"ReplicateDeviceCameraCFrame")
 
 local LocalPlayer = Players.LocalPlayer
-
-local Request = RobloxReplicatedStorage:WaitForChild("RequestDeviceCameraCFrame")
-local Replicate = RobloxReplicatedStorage:WaitForChild("ReplicateDeviceCameraCFrame")
+local Heartbeat = RunService.Heartbeat
+local GetPlayers = Players.GetPlayers
+local FireServer = Request.FireServer
+local Connect = Heartbeat.Connect
+local Disconnect = Connect(GetPropertyChangedSignal(game,"CreatorId"),emptyfunction)
 
 pcall(function()
-	local CoreGui = game:GetService("CoreGui")
-	local RobloxGui = CoreGui:WaitForChild("RobloxGui")
-	local PlayerViewCore = RobloxGui:WaitForChild("CoreScripts/PlayerView")
+	local CoreGui = GetService(game,"CoreGui")
+	local RobloxGui = WaitForChild(CoreGui,"RobloxGui")
+	local PlayerViewCore = WaitForChild(RobloxGui,"CoreScripts/PlayerView")
 	
 	PlayerViewCore.Enabled = false
 	
@@ -31,34 +48,42 @@ pcall(function()
 	local Interval = 1 / Frequency
 	local Accumulator = 0
 	
-	tableinsert(BaseConnections,RunService.Heartbeat:Connect(function(Delta)
+	local PlayerTable = GetPlayers(Players)
+	tableinsert(BaseConnections,Connect(Players.PlayerAdded,function(Player)
+		tableinsert(PlayerTable,Player)
+	end))
+	tableinsert(BaseConnections,Connect(Players.PlayerRemoving,function(Player)
+		tableremove(PlayerTable,tablefind(PlayerTable,Player))
+	end))
+	
+	tableinsert(BaseConnections,Connect(Heartbeat,function(Delta)
 		Accumulator = Accumulator + Delta
 		while Accumulator >= Interval do
 			Accumulator = Accumulator - Interval
-			for _,Player in next,Players:GetPlayers() do
-				Request:FireServer(Player.UserId)
+			for _,Player in next,PlayerTable do
+				FireServer(Request,Player.UserId)
 			end
 		end
 	end))
 	
-	Request.OnClientEvent:Connect(function()
-		
-	end)
+	tableinsert(BaseConnections,Connect(Request.OnClientEvent,emptyfunction))
 end)
 
-ShareSocket.new = function(portid, excludelocalplayer)
-	portid = (typeof(portid)=="number" and cframenew(10,75,portid)) or (typeof(portid)=="CFrame" and portid) or sharedportid
+ClientSocket.new = function(PortId, ExcludeLocalClient)
+	PortId = (typeof(PortId)=="number" and cframenew(0,PortId,0)) or (typeof(PortId)=="CFrame" and PortId) or sharedportid
 	
-	local SocketPort = SocketPorts[portid]
+	local SocketPort = SocketPorts[PortId]
 	if not SocketPort or not port.Disconnected then
-		SocketPort = {}
-		SocketPort.Disconnected = false
-		SocketPort.Connection = nil
-		SocketPort.Functions = {}
+		SocketPort = setmetatable({
+			Disconnected = false,
+			Connection = nil,
+			Functions = {}
+		},{})
+		SocketPort.__index = SocketPort
 		
 		SocketPort.Request = function(self, RequestId, ...)
 			if not self.Disconnected then
-				Replicate:FireServer(portid,{RequestId=RequestId,Arguments={...}})
+				FireServer(Replicate,PortId,{RequestId,{...}})
 			end
 		end
 		
@@ -73,53 +98,51 @@ ShareSocket.new = function(portid, excludelocalplayer)
 				warn("Cannot destroy an destroyed port!")
 			else
 				local Connection = self.Connection
-				Connection:Disconnect()
+				Disconnect(Connection)
+				tableclear(self.Functions)
 				self.Disconnected = true
 			end
 		end
 		
-		if excludelocalplayer then
-			SocketPort.Connection = Replicate.OnClientEvent:Connect(function(plr,connectorportid,args)
-				if plr~=LocalPlayer and portid==connectorportid then
-					for _,v in next,SocketPort.Functions do
-						if _==args.RequestId then
-							v(tableunpack(args.Arguments))
+		if ExcludeLocalClient then
+			SocketPort.Connection = Connect(Replicate.OnClientEvent,function(plr,connectorportid,args)
+				if plr~=LocalPlayer and PortId==connectorportid then
+					for i,v in next,SocketPort.Functions do
+						if not i==args[1] then
+							continue
 						end
+						v(tableunpack(args[2]))
 					end
 				end
 			end)
 		else
-			SocketPort.Connection = Replicate.OnClientEvent:Connect(function(plr,connectorportid,args)
-				if portid==connectorportid then
-					for _,v in next,SocketPort.Functions do
-						if _==args.RequestId then
-							v(tableunpack(args.Arguments))
+			SocketPort.Connection = Connect(Replicate.OnClientEvent,function(plr,connectorportid,args)
+				if PortId==connectorportid then
+					for i,v in next,SocketPort.Functions do
+						if not i==args[1] then
+							continue
 						end
+						v(tableunpack(args[2]))
 					end
 				end
 			end)
 		end
 		
-		SocketPorts[portid] = SocketPort
+		SocketPorts[PortId] = SocketPort
 	end
 	
 	return SocketPort
 end
 
-ShareSocket.DestroyAll = function(self)
-	portid = (typeof(portid)=="number" and cframenew(1,1,portid)) or (typeof(portid)=="CFrame" and portid) or sharedportid
-	
-	local port = SocketPorts[portid]
+ClientSocket.DestroyAll = function(self)
 	for _,v in next,BaseConnections do
-		v:Disconnect()
+		Disconnect(v)
 	end
-	if port then
-		local Connection = port.Connection
-		if Connection then
-			Connection:Disconnect()
+	for i,v in next,SocketPorts do
+		if not v.Disconnected then
+			v:Destroy()
 		end
-		port.Disconnected = true
 	end
 end
 
-return ShareSocket
+return ClientSocket
