@@ -145,7 +145,7 @@ ClientSocket.DestroyAll = function(self)
 	end
 end
 
-return ClientSocketlocal Connect = Heartbeat.Connect
+local Connect = Heartbeat.Connect
 local Disconnect = Connect(GetPropertyChangedSignal(game,"CreatorId"),emptyfunction)
 
 pcall(function()
