@@ -977,7 +977,7 @@ function Animator.new(humanoid)
 	local animations = {}
 	local joints = {}
 	local jointTrackers = {}
-	local steppedEvent = Signal.new("Stepped")
+	local steppedEvent = Signal()
 
 	self.AnimationMode = AnimationMode.Transform
 	self.Stepped = steppedEvent
