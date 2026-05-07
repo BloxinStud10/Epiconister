@@ -124,272 +124,240 @@ SOFTWARE.
 ]]--
 
 -- Types.
+export type Connection = {
+	Disconnect: typeof(
+		-- Disconnects the connection.
+		-- To reconnect, make a new connection.
+		function(connection: Connection) end
+	),
+	Connected: boolean
+}
 export type Signal<Parameters...> = {
 	Connect: typeof(
-		-- Connects a function.
+		-- Connects the given function.
 		function(signal: Signal<Parameters...>, callback: (Parameters...) -> ()): Connection end
 	),
 	Once: typeof(
-		-- Connects a function, then auto-disconnects after the first call.
+		-- Connects the given function, but disconnects after first fire.
 		function(signal: Signal<Parameters...>, callback: (Parameters...) -> ()): Connection end
 	),
 	Wait: typeof(
-		-- Yields the calling thread until the next fire.
+		-- Yields the current thread until the next fire.
 		function(signal: Signal<Parameters...>): Parameters... end
 	),
-	
+
 	Fire: typeof(
-		-- Runs all connected functions and resumes all waiting threads.
+		-- Fires all callbacks and resumes all waiting threads.
 		function(signal: Signal<Parameters...>, ...: Parameters...) end
 	),
-	
+
 	DisconnectAll: typeof(
-		-- Erases all connections.
-		-- <strong>Much faster than calling <code>Disconnect</code> on each.</strong>
+		-- Disconnects all connections.
 		function(signal: Signal<Parameters...>) end
 	),
 	Destroy: typeof(
-		-- Erases all connections and methods.
-		-- <strong>To fully erase, also remove all references to the signal.</strong>
+		-- Disconnects all connections, and makes the signal unusable.
 		function(signal: Signal<Parameters...>) end
-	)
-}
-export type Connection = {
-	Signal: Signal,
-	Connected: boolean,
-	Disconnect: typeof(
-		-- Removes the connection from the signal.
-		-- <strong>The connection's data remains.</strong>
-		function(connection: Connection) end
-	)
+	),
 }
 type CreateSignal = typeof(
 	-- Creates a new signal.
-	function(): Signal end
+	function<Parameters...>(): Signal<Parameters...> end
 )
 
--- Spawn function.
-local spawnThread = if script:GetAttribute("Deferred") then task.defer else task.spawn
+-- No operation function.
+local function noop()
 
--- Setup reusable callback threads.
-local threads = {}
-
-local function reusableThreadCall(callback, thread, ...)
-	callback(...)
-	table.insert(threads, thread)
 end
-local function reusableThread()
+
+-- Setup thread recycling.
+local threads = {}
+local function reusableThreadCall(callback, ...)
+	callback(...)
+	table.insert(threads, coroutine.running())
+end
+local function reusableThread(callback, ...)
+	callback(...)
+	table.insert(threads, coroutine.running())
 	while true do
 		reusableThreadCall(coroutine.yield())
 	end
 end
 
--- Connection methods.
-local function disconnect(connection)
-	-- Verify connection.
-	if not connection.Connected then return end
-	
-	-- Remove connection.
-	connection.Connected = nil
-	
-	local signal = connection.Signal
-	local previous = connection.Previous
-	local next = connection.Next
-	if previous then
-		previous.Next = next
-	else
-		signal.Tail = next
-	end
-	if next then
-		next.Previous = previous
-	else
-		signal.Head = previous
-	end
-end
+-- Connection class.
+local connectionClass = table.freeze({__index = table.freeze({
+	Disconnect = function(connection)
+		-- Ensure it is already connected.
+		if not connection.Connected then return end
 
--- Signal methods.
-local Signal = {}
-Signal.__index = Signal
-
-Signal.Connect = function(signal, callback)
-	-- Linked list head.
-	local head = signal.Head
-	
-	-- Create connection.
-	local connection = {
-		Signal = signal,
-		Previous = head,
-		
-		Callback = callback,
-		
-		Connected = true,
-		Disconnect = disconnect
-	}
-	
-	-- Add connection.
-	if head then
-		head.Next = connection
-	else
-		signal.Tail = connection
-	end
-	signal.Head = connection
-	
-	-- Return connection.
-	return connection
-end
-Signal.Once = function(signal, callback)
-	-- Linked list head.
-	local head = signal.Head
-	
-	-- Create connection.
-	local connection
-	connection = {
-		Signal = signal,
-		Previous = head,
-		
-		Callback = function(...)
-			-- Verify connection.
-			if not connection.Connected then return end
-			
-			-- Remove connection.
-			connection.Connected = false
-			
-			local previous = connection.Previous
-			local next = connection.Next
-			if previous then
-				previous.Next = next
-			else
-				signal.Tail = next
-			end
-			if next then
-				next.Previous = previous
-			else
-				signal.Head = previous
-			end
-			
-			-- Fire callback.
-			callback(...)
-		end,
-		
-		Connected = true,
-		Disconnect = disconnect
-	}
-	
-	-- Add connection.
-	if head then
-		head.Next = connection
-	else
-		signal.Tail = connection
-	end
-	signal.Head = connection
-	
-	-- Return connection.
-	return connection
-end
-Signal.Wait = function(signal)
-	-- Save this thread to resume later.
-	local thread = coroutine.running()
-	
-	-- Linked list head.
-	local head = signal.Head
-	
-	-- Create connection.
-	local connection
-	connection = {
-		Previous = head,
-		
-		Callback = function(...)
-			-- Remove connection.
-			connection.Connected = false
-			
-			local previous = connection.Previous
-			local next = connection.Next
-			if previous then
-				previous.Next = next
-			else
-				signal.Tail = next
-			end
-			if next then
-				next.Previous = previous
-			else
-				signal.Head = previous
-			end
-			
-			-- Resume the thread.
-			if coroutine.status(thread) == "suspended" then -- To avoid creating new threads.
-				task.spawn(thread, ...)
-			end
-		end
-	}
-	
-	-- Add connection.
-	if head then
-		head.Next = connection
-	else
-		signal.Tail = connection
-	end
-	signal.Head = connection
-	
-	-- Yield until the next fire, then return the arguments on resume.
-	return coroutine.yield()
-end
-
-Signal.Fire = function(signal, ...)
-	local connection = signal.Tail -- Start from the tail (back) of the list.
-	while connection do
-		-- Find or create a thread, then run the callback in it.
-		local length = #threads
-		if length == 0 then
-			local thread = coroutine.create(reusableThread)
-			coroutine.resume(thread) -- Initialize.
-			spawnThread(thread, connection.Callback, thread, ...)
+		-- Remove from linked list.
+		local previous = connection[2]
+		local next = connection[3]
+		if previous then
+			previous[3] = next
 		else
-			local thread = threads[length]
-			threads[length] = nil -- Remove from free threads list.
-			spawnThread(thread, connection.Callback, thread, ...)
+			connection[1][1] = next
 		end
-		-- Traverse.
-		connection = connection.Next
+		if next then
+			next[2] = previous
+		end
+		-- Set connected property.
+		connection.Connected = false
+		-- Clear values.
+		connection[1] = nil
+		connection[2] = nil
+		connection[3] = nil
+		connection[4] = nil
 	end
-end
+})})
 
-Signal.DisconnectAll = function(signal)
-	-- Remove all connections.
-	local connection = signal.Tail
-	while connection do
-		-- Save next connection.
-		local nextConnection = connection.Next
-		-- Remove data and pointers.
-		connection.Connected = nil
-		connection.Next = nil
-		connection.Previous = nil
-		-- Traverse.
-		connection = nextConnection
+-- Signal class.
+local signalClass = table.freeze({__index = table.freeze({
+	Connect = function(signal, callback)
+		-- Setup connection.
+		local connection = setmetatable({
+			[1] = signal,
+			[2] = nil, -- Previous.
+			[3] = signal[1], -- Next.
+			[4] = callback,
+
+			Connected = true
+		}, connectionClass)
+		signal[1] = connection
+
+		-- Return connection.
+		return connection
+	end,
+	Once = function(signal, callback)
+		-- Setup connection.
+		local connection = nil
+		connection = setmetatable({
+			[1] = signal,
+			[2] = nil, -- Previous.
+			[3] = signal[1], -- Next.
+			[4] = function(...) -- Callback.
+				-- Disconnect.
+				local previous = connection[2]
+				local next = connection[3]
+				if previous then
+					previous[3] = next
+				else
+					signal[1] = next
+				end
+				if next then
+					next[2] = previous
+				end
+				connection[4] = nil
+				connection.Connected = false
+
+				-- Fire callback.
+				callback(...)
+			end,
+
+			Connected = true
+		}, connectionClass)
+		signal[1] = connection
+
+		-- Return connection.
+		return connection
+	end,
+	Wait = function(signal)
+		-- Save the thread (this) to resume later.
+		local thread = coroutine.running()
+
+		-- Setup connection.
+		local connection = nil
+		connection = {
+			[1] = signal,
+			[2] = nil, -- Previous.
+			[3] = signal[1], -- Next.
+			[4] = function(...) -- Callback.
+				-- Disconnect.
+				local previous = connection[2]
+				local next = connection[3]
+				if previous then
+					previous[3] = next
+				else
+					signal[1] = next
+				end
+				if next then
+					next[2] = previous
+				end
+				connection[4] = nil
+
+				-- Resume the thread.
+				task.spawn(thread, ...)
+			end,
+		}
+		signal[1] = connection
+
+		-- Yield until the next fire, and return the arguments on resume.
+		return coroutine.yield()
+	end,
+
+	Fire = function(signal, ...)
+		-- Fire all callbacks.
+		local node = signal[1]
+		while node do
+			-- Find or create a thread, and run the callback in it.
+			local length = #threads
+			if length == 0 then
+				task.spawn(reusableThread, node[4], ...)
+			else
+				local thread = threads[length]
+				threads[length] = nil -- Remove from free threads list.
+				task.spawn(thread, node[4], ...)
+			end
+
+			-- Go to the next connection.
+			node = node[3]
+		end
+	end,
+
+	DisconnectAll = function(signal)
+		local node = signal[1]
+		while node do
+			local next = node[3]
+
+			node[1] = nil
+			node[2] = nil
+			node[3] = nil
+			node[4] = nil
+			if node.Connected then -- Since 'Wait' connections don't have the 'Connected' property.
+				node.Connected = false
+			end
+
+			node = next
+		end
+		signal[1] = nil
+	end,
+	Destroy = function(signal)
+		-- Disconnect all.
+		local node = signal[1]
+		while node do
+			local next = node[3]
+
+			node[1] = nil
+			node[2] = nil
+			node[3] = nil
+			node[4] = nil
+			if node.Connected then -- Since 'Wait' connections don't have the 'Connected' property.
+				node.Connected = false
+			end
+
+			node = next
+		end
+		signal[1] = nil
+
+		-- Link all methods to noop (no operation) function.
+		signal.Connect = noop
+		signal.Once = noop
+		signal.Wait = noop
+		signal.Fire = noop
+		signal.DisconnectAll = noop
+		signal.Destroyed = noop
 	end
-	-- Remove signal's references.
-	signal.Tail = nil
-	signal.Head = nil
-end
-Signal.Destroy = function(signal)
-	-- Remove all connections.
-	local connection = signal.Tail
-	while connection do
-		-- Save next connection.
-		local nextConnection = connection.Next
-		-- Remove data and pointers.
-		connection.Connected = nil
-		connection.Next = nil
-		connection.Previous = nil
-		-- Traverse.
-		connection = nextConnection
-	end
-	-- Remove signal's references.
-	signal.Tail = nil
-	signal.Head = nil
-	
-	-- Unlink signal methods.
-	setmetatable(signal, nil)
-end
+})})
 
 local Signal = function()
 	return setmetatable({}, signalClass)
@@ -527,6 +495,9 @@ local clock = os.clock
 local min = math.min
 local tclear = table.clear
 local cframeIdentity = CFrame.identity
+local Lerp = cframeIdentity.Lerp or function(a,b,t)
+	return a:Lerp(b,t)
+end
 
 function AnimationTrack:Play(fadeTime, weight, speed)
 	fadeTime = fadeTime or 0.1
@@ -584,8 +555,6 @@ function AnimationTrack:Play(fadeTime, weight, speed)
 	self._startTime = startTime
 	reset()
 	local function step(delta)
-		debug.profilebegin("animationProcess")
-
 		local now = clock()
 		local netWeight = getCurrentTotalWeight()
 		if length == 0 then
@@ -727,7 +696,7 @@ function AnimationTrack:Play(fadeTime, weight, speed)
 				transforms[jointName] = lastPose.cframe
 			else
 				local dt = (timePosition - lastPose.time)/(nextPose.time - lastPose.time)
-				transforms[jointName] = lastPose.cframe:Lerp(nextPose.cframe, math.min(getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection),1))
+				transforms[jointName] = Lerp(lastPose.cframe, nextPose.cframe, math.min(getLerpAlpha(dt, nextPose.easingStyle, nextPose.easingDirection),1))
 			end
 		end
 		return transforms, netWeight
@@ -763,7 +732,7 @@ function AnimationTrack:_fadeOut(fadeTime)
 			return
 		end
 		for jointName, initCF in initCFrames do
-			newTransforms[jointName] = initCF:Lerp(cframeIdentity, math.min(a,1))
+			newTransforms[jointName] = Lerp(initCF, cframeIdentity, math.min(a,1))
 		end
 		self._transforms = newTransforms
 		return {}, self.Weight*(1 - a)
@@ -949,10 +918,10 @@ function Animator:Destroy()
 	self._stepped = nil
 	self._descendantAdded = nil
 	self._descendantRemoving = nil
+	setmetatable(self, nil)
 end
 
 local clock = os.clock
-local cfIdentity = CFrame.identity
 
 -- for mimicking naming behavior of poses
 
@@ -1063,7 +1032,7 @@ function Animator.new(humanoid): Animator
 					if other then
 						-- hope this works!
 						local a = priority == other[3] and weight/(weight + other[4]) or weight
-						local cfFinal = other[2]:Lerp(cf, math.min(a,1)) 
+						local cfFinal = Lerp(other[2], cf, math.min(a,1)) 
 						newTransforms[jointName] = {startTime, cfFinal, priority, weight}
 					else
 						newTransforms[jointName] = {startTime, cf, priority, weight}
@@ -1076,16 +1045,14 @@ function Animator.new(humanoid): Animator
 			newTransforms[jointName] = cfData[2]
 		end
 		for jointName, joint in joints do
-			local cf = newTransforms[jointName]
-			local transform
-			if cf then
-				transform = cf
-				newTransforms[jointName] = transform
+			local cf = newTransforms[jointName] or cframeIdentity
+			local old = currentTransforms[jointName]
+			
+			if old then
+				joint.joint.C0 = Lerp(joint.joint.C0, joint.c0 * cf, math.min(delta * 20, 1))
 			else
-				transform = currentTransforms[jointName]:Lerp(cfIdentity, math.min(1 - (1/10)^(delta*10),1))
-				newTransforms[jointName] = transform
+				joint.joint.C0 = joint.c0 * cf
 			end
-			joint.joint.Transform = transform
 		end
 		self._transforms = newTransforms
 		steppedEvent:Fire(newTransforms)
@@ -1096,16 +1063,17 @@ function Animator.new(humanoid): Animator
 			return
 		end
 		local me = {
-			joint = joint
+			joint = joint,
+			c0 = joint.C0
 		}
 		if joint.Part1 then
 			joints[joint.Part1.Name] = me
-			self._transforms[joint.Part1.Name] = cfIdentity
+			self._transforms[joint.Part1.Name] = cframeIdentity
 		end
 		self._jointTrackers[joint] = JointTracker(joint, function(name)
 			joints[name] = me
 			if not self._transforms[joint.Part1.Name] then
-				self._transforms[joint.Part1.Name] = cfIdentity
+				self._transforms[joint.Part1.Name] = cframeIdentity
 			end
 		end, function(name)
 			joints[name] = nil
